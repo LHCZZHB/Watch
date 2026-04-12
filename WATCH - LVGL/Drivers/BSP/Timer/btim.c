@@ -1,6 +1,6 @@
 #include "./BSP/Timer/btim.h"
 #include "./SYSTEM/USART/usart.h"
-
+#include "lvgl.h"
 
 TIM_HandleTypeDef g_tim6_handle;        /* 定时器6句柄 */
 TIM_HandleTypeDef g_tim7_handle;        /* 定时器7句柄 */
@@ -34,12 +34,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim == (&g_tim6_handle))
     {
-        printf("TIM6输出\r\n");
+        lv_tick_inc(1);
     }
-    else if (htim == (&g_tim7_handle))
-    {
-        printf("TIM7输出\r\n");
-    }
+    
 }
 
 //定时器6中断初始化函数

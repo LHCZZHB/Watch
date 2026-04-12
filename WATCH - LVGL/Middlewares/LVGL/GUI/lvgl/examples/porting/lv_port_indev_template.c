@@ -12,6 +12,7 @@
 #include "lv_port_indev_template.h"
 #include "../../lvgl.h"
 #include "./BSP/TOUCH/cst816.h"
+#include "./SYSTEM/usart/usart.h"
 
 /*********************
  *      DEFINES
@@ -34,6 +35,7 @@ static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y);
  *  STATIC VARIABLES
  **********************/
 lv_indev_t * indev_touchpad;
+static uint8_t last_finger_num = 0;
 
 /**********************
  *      MACROS
@@ -70,7 +72,7 @@ void lv_port_indev_init(void)
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
-    cst816_init();
+    cst816t_init();
 }
 
 /*Will be called by the library to read the touchpad*/
@@ -78,10 +80,18 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {
     static lv_coord_t last_x = 0;
     static lv_coord_t last_y = 0;
+    uint16_t touch_x = 0;
+    uint16_t touch_y = 0;
+    uint8_t gesture = 0;
+    uint8_t finger_num = 0;
+
+    cst816t_getaction(&touch_x, &touch_y, &gesture, &finger_num);
+    last_finger_num = finger_num;
 
     /*Save the pressed coordinates and the state*/
     if(touchpad_is_pressed()) {
-        touchpad_get_xy(&last_x, &last_y);
+        last_x = (lv_coord_t)touch_x;
+        last_y = (lv_coord_t)touch_y;
         data->state = LV_INDEV_STATE_PR;
     } else {
         data->state = LV_INDEV_STATE_REL;
@@ -92,25 +102,25 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     data->point.y = last_y;
 }
 
-/*Return true is the touchpad is pressed*/
+/*Return true if the touchpad is pressed*/
 static bool touchpad_is_pressed(void)
 {
-    uint8_t finger_num = cst816_get_finger_num();
-
-    if(finger_num != 0x00 && finger_num != 0xFF) {
-        return true;
-    }
-
-    return false;
+    return (last_finger_num != 0);
 }
 
 /*Get the x and y coordinates if the touchpad is pressed*/
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
 {
-    /*Your code comes here*/
-		cst816_get_all_data();
-    (*x) = CST816_Instance.X_Pos;
-    (*y) = CST816_Instance.Y_Pos;
+    uint16_t touch_x = 0;
+    uint16_t touch_y = 0;
+    uint8_t gesture = 0;
+    uint8_t finger_num = 0;
+
+    cst816t_getaction(&touch_x, &touch_y, &gesture, &finger_num);
+    last_finger_num = finger_num;
+    (*x) = (lv_coord_t)touch_x;
+    (*y) = (lv_coord_t)touch_y;
+    printf("Touchpad X: %d, Y: %d\r\n", *x, *y);
 }
 
 #else /*Enable this file at the top*/

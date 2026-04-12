@@ -51,7 +51,7 @@ void LCD_Color_Fill(uint16_t xsta,uint16_t ysta,uint16_t xend,uint16_t yend,uint
 		return;
 	}
 
-	lcd_address_set(xsta, ysta, xend - 1, yend - 1);
+	lcd_address_set(xsta, ysta, xend, yend);
 
 	g_spi1_handle.Init.DataSize = SPI_DATASIZE_16BIT;
 	g_spi1_handle.Instance->CR1 |= SPI_CR1_DFF;

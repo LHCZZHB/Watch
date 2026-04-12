@@ -3,6 +3,8 @@
 
 #include "./SYSTEM/sys/sys.h"
 
+extern volatile uint8_t cst_itr;
+
 
 #define TOUCH_RST_PORT			GPIOB
 #define TOUCH_RST_PIN		    GPIO_PIN_14
@@ -16,18 +18,22 @@
 #define TOUCH_INT_RES()   HAL_GPIO_WritePin(TOUCH_INT_PORT,TOUCH_INT_PIN,GPIO_PIN_RESET)//INT
 #define TOUCH_INT_SET()   HAL_GPIO_WritePin(TOUCH_INT_PORT,TOUCH_INT_PIN,GPIO_PIN_SET)
  		    
-/* 设备地址 */
+//设备地址
 #define Device_Addr_cst 	0x15
+//设备写地址
+#define Device_Write_Addr_cst 	0x2A
+//设备读地址
+#define Device_Read_Addr_cst 	0x2B
 
 
-/* 触摸屏寄存器地址 */
+/* 触摸屏寄存器 */
 #define GestureID 			0x01
 #define FingerNum 			0x02
 #define XposH 					0x03
 #define XposL 					0x04
 #define YposH 					0x05
 #define YposL 					0x06
-#define ChipID 					0xFF
+#define ChipID 					0xA7
 #define SleepMode				0xE5
 #define MotionMask 			0xEC
 #define IrqPluseWidth 	0xED
@@ -45,18 +51,26 @@
 #define IOCtl 					0xFD
 #define DisAutoSleep 		0xFE
 
-/* 触摸信息结构体 */
+/* 触摸屏坐标结构体 */
 typedef struct
 {
 	unsigned int X_Pos;
 	unsigned int Y_Pos;
-//	uint8_t FingerNum;
-//	uint8_t Gesture;
 } CST816_Info;
 
 extern CST816_Info CST816_Instance;
 
-/* 手势 ID 识别选项 */
+//typedef struct {
+//    uint32_t first_click_time;
+//    uint16_t first_x;
+//    uint16_t first_y;
+//    uint8_t click_stage;
+//    uint8_t keep_dblclick;       // 新增双击保持标志
+//    uint8_t last_valid_gesture;  // 记录有效手势
+//} DoubleClickState;
+//static DoubleClickState dc_state = {0};
+
+/* 手势ID识别选项 */
 typedef enum
 {
 	NOGESTURE = 	0x00,
@@ -69,7 +83,7 @@ typedef enum
 	LONGPRESS = 	0x0C,
 } GestureID_TypeDef;
 
-/* 运动使能选项 */
+/* 连续动作配置选项 */
 typedef enum
 {
 	M_DISABLE = 	0x00,
@@ -79,7 +93,7 @@ typedef enum
 	M_ALLENABLE = 0x07,
 } MotionMask_TypeDef;
 
-/* 中断触发方式选项 */
+/* 中断低脉冲发射方式选项 */
 typedef enum
 {
 	OnceWLP = 		0x00,
@@ -89,18 +103,9 @@ typedef enum
 	EnTest = 			0x80,
 } IrqCtl_TypeDef;
 
-uint8_t cst816_init(void);
-void cst816_reset(void);
-void cst816_get_all_data(void);
-uint8_t cst816_get_finger_num(void);
-uint8_t cst816_get_id(void);
-void cst816_enable_continuous_mode(uint8_t mode);
-void cst816_config_auto_sleep_time(uint8_t time);
-void cst816_sleep(void);
-void cst816_wakeup(void);
-void cst816_config_motion_sl_angle(uint8_t x_right_y_up_angle);
-void cst816_config_nor_scan_per(uint8_t period);
-void cst816_config_irq_pluse_width(uint8_t Width);
-void cst816_config_lp_scan_th(uint8_t TH);
-
+void cst816t_init(void);
+uint8_t cst816t_receivebyte(uint8_t regaddress);
+uint8_t cst816t_receivemultibytes(uint8_t regaddress, uint8_t *data, uint8_t length);
+void cst816t_sendbyte(uint8_t regaddress, uint8_t data);
+void cst816t_getaction(uint16_t *x, uint16_t *y, uint8_t *gesture, uint8_t *finger_num);
 #endif 
