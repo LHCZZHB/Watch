@@ -9,11 +9,10 @@
 #include "./BSP/LCD/lcd.h"
 #include "./BSP/DMA/dma.h"
 #include "lvgl_demo.h"
+#include "freertos_demo.h"
 
-//#include "lv_demo_stress.h"
-//#include "lv_demo_music.h"
 
-volatile uint8_t cst_itr = 0; // 触摸中断标志位
+
 
 int main(void)
 {
@@ -28,28 +27,12 @@ int main(void)
     dma2_init();                        /* 初始化 DMA2 */
     spi1_init();
 
-//    lv_obj_t* switch_obj = lv_switch_create(lv_scr_act());
-//    lv_obj_set_size(switch_obj, 120, 60);
-//    lv_obj_align(switch_obj, LV_ALIGN_CENTER, 0, 0);
-
-//    lv_demo_stress();
-//    lv_demo_music();
-
-    lvgl_demo();
+    freertos_demo();
     
-    uint16_t x, y;
-    uint8_t gesture;
-    uint8_t finger_num;
+
     while(1)
     {
 
-        
-        if(cst_itr == 1) // 如果触摸中断标志位被设置
-        {
-            cst_itr = 0; // 清除触摸中断标志位
-            LED1_TOGGLE(); // 触摸事件发生时切换 LED 状态
-            cst816t_getaction(&x, &y, &gesture, &finger_num); // 获取触摸状态
-        }                    /* LVGL 任务处理函数 */
     }
 }
 
