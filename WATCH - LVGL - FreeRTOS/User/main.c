@@ -8,6 +8,7 @@
 #include "./BSP/LCD/lcd_init.h"
 #include "./BSP/LCD/lcd.h"
 #include "./BSP/DMA/dma.h"
+#include "./BSP/WWDG/wwdg.h"
 #include "lvgl_demo.h"
 #include "freertos_demo.h"
 
@@ -26,7 +27,7 @@ int main(void)
     iic_init();                         /* 初始化 IIC，用于触摸屏 */
     dma2_init();                        /* 初始化 DMA2 */
     spi1_init();
-
+    wwdg_init(0x7F, 0x50, WWDG_PRESCALER_8); /* 初始化窗口看门狗 */
     freertos_demo();
     
 

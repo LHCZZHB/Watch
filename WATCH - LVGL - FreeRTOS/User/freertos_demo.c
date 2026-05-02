@@ -110,7 +110,6 @@ void lv_demo_task(void *pvParameters)
         if(cst_itr == 1) // 如果触摸中断标志位被设置
         {
             cst_itr = 0; // 清除触摸中断标志位
-//            LED1_TOGGLE(); // 触摸事件发生时切换 LED 状态
             cst816t_getaction(&x, &y, &gesture, &finger_num); // 获取触摸状态
         }                    /* LVGL 任务处理函数 */
         lv_timer_handler(); /* LVGL计时器 */
@@ -129,8 +128,8 @@ void led_task(void *pvParameters)
     
     while(1)
     {
-//        LED0_TOGGLE();
-        vTaskDelay(pdMS_TO_TICKS(10));
+        //LED0_TOGGLE();
+        vTaskDelay(pdMS_TO_TICKS(49));
     }
 }
 
