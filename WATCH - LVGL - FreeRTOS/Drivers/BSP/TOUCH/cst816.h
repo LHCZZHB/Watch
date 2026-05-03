@@ -3,21 +3,16 @@
 
 #include "./SYSTEM/sys/sys.h"
 
-extern volatile uint8_t cst_itr;
 
 
 #define TOUCH_RST_PORT			GPIOB
 #define TOUCH_RST_PIN		    GPIO_PIN_14
 
-#define TOUCH_INT_PORT			GPIOB
-#define TOUCH_INT_PIN		    GPIO_PIN_15
 
 #define TOUCH_RST_RES()  HAL_GPIO_WritePin(TOUCH_RST_PORT,TOUCH_RST_PIN,GPIO_PIN_RESET)//RES
 #define TOUCH_RST_SET()  HAL_GPIO_WritePin(TOUCH_RST_PORT,TOUCH_RST_PIN,GPIO_PIN_SET)
 
-#define TOUCH_INT_RES()   HAL_GPIO_WritePin(TOUCH_INT_PORT,TOUCH_INT_PIN,GPIO_PIN_RESET)//INT
-#define TOUCH_INT_SET()   HAL_GPIO_WritePin(TOUCH_INT_PORT,TOUCH_INT_PIN,GPIO_PIN_SET)
- 		    
+
 //设备地址
 #define Device_Addr_cst 	0x15
 //设备写地址

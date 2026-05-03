@@ -2,6 +2,7 @@
 #include "./SYSTEM/usart/usart.h"
 #include "./SYSTEM/delay/delay.h"
 #include "./BSP/IIC/myiic.h"
+#include "./BSP/EXTI/exti.h"
 #include "./BSP/LED/led.h"
 #include "./BSP/KEY/key.h"
 #include "./BSP/SPI/spi.h"
@@ -25,6 +26,7 @@ int main(void)
     led_init();                         /* 初始化 LED */
     key_init();
     iic_init();                         /* 初始化 IIC，用于触摸屏 */
+    extix_init();                       /* 初始化触摸和 MPU6050 外部中断 */
     dma2_init();                        /* 初始化 DMA2 */
     spi1_init();
     wwdg_init(0x7F, 0x50, WWDG_PRESCALER_8); /* 初始化窗口看门狗 */

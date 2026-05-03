@@ -1,13 +1,18 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "freertos_demo.h"
+#include "semphr.h"
+
 
 #include "lvgl.h"
 #include "lv_port_disp_template.h"
 #include "lv_port_indev_template.h"
 #include "lvgl_demo.h"
+#include "./SYSTEM/usart/usart.h"
+
 
 #include "./BSP/LED/led.h"
+#include "./BSP/MPU6050/mpu6050.h"
 
 /******************************************************************************************************/
 /*FreeRTOS配置*/
@@ -28,16 +33,19 @@ void start_task(void *pvParameters);    /* 任务函数 */
 TaskHandle_t LV_DEMOTask_Handler;       /* 任务句柄 */
 void lv_demo_task(void *pvParameters);  /* 任务函数 */
 
-/* LED_TASK 任务 配置
+/* MPU6050任务 配置
  * 包括: 任务句柄 任务优先级 堆栈大小 创建任务
  */
-#define LED_TASK_PRIO       2           /* 任务优先级 */
-#define LED_STK_SIZE        128         /* 任务堆栈大小 */
-TaskHandle_t LEDTask_Handler;           /* 任务句柄 */
-void led_task(void *pvParameters);      /* 任务函数 */
-/******************************************************************************************************/
+#define MPU6050_TASK_PRIO   2           /* 任务优先级 */
+#define MPU6050_STK_SIZE    128         /* 任务堆栈大小 */
+TaskHandle_t MPU6050Task_Handler;       /* 任务句柄 */
+void mpu6050_task(void *pvParameters);      /* 任务函数 */
 
-volatile uint8_t cst_itr = 0; // 触摸中断标志位
+SemaphoreHandle_t MpuSemaphore = NULL;             /* MPU6050数据访问二值信号量 */  
+SemaphoreHandle_t TouchSemaphore = NULL;           /* 触摸数据访问二值信号量 */
+SemaphoreHandle_t MutexSemaphore;           /* 互斥信号量  */
+
+/******************************************************************************************************/
 
 
 /**
@@ -72,6 +80,12 @@ void start_task(void *pvParameters)
     
     taskENTER_CRITICAL();           /* 进入临界区 */
 
+    //创建二值信号量
+    MpuSemaphore = xSemaphoreCreateBinary();
+    TouchSemaphore = xSemaphoreCreateBinary();
+    /* 创建互斥信号量 */
+    MutexSemaphore = xSemaphoreCreateMutex();
+    
     /* 创建LVGL任务 */
     xTaskCreate((TaskFunction_t )lv_demo_task,
                 (const char*    )"lv_demo_task",
@@ -80,13 +94,13 @@ void start_task(void *pvParameters)
                 (UBaseType_t    )LV_DEMO_TASK_PRIO,
                 (TaskHandle_t*  )&LV_DEMOTask_Handler);
 
-    /* LED测试任务 */
-    xTaskCreate((TaskFunction_t )led_task,
-                (const char*    )"led_task",
-                (uint16_t       )LED_STK_SIZE,
+    /* MPU6050任务 */
+    xTaskCreate((TaskFunction_t )mpu6050_task,
+                (const char*    )"mpu6050_task",
+                (uint16_t       )MPU6050_STK_SIZE,
                 (void*          )NULL,
-                (UBaseType_t    )LED_TASK_PRIO,
-                (TaskHandle_t*  )&LEDTask_Handler);
+                (UBaseType_t    )MPU6050_TASK_PRIO,
+                (TaskHandle_t*  )&MPU6050Task_Handler);
 
     taskEXIT_CRITICAL();            /* 退出临界区 */
     vTaskDelete(StartTask_Handler); /* 删除开始任务 */
@@ -107,29 +121,51 @@ void lv_demo_task(void *pvParameters)
     
     while(1)
     {
-        if(cst_itr == 1) // 如果触摸中断标志位被设置
+        if(xSemaphoreTake(TouchSemaphore, portMAX_DELAY) == pdTRUE) 
         {
-            cst_itr = 0; // 清除触摸中断标志位
+            xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
             cst816t_getaction(&x, &y, &gesture, &finger_num); // 获取触摸状态
+            xSemaphoreGive(MutexSemaphore);                 /* 释放互斥信号量 */
         }                    /* LVGL 任务处理函数 */
+        
         lv_timer_handler(); /* LVGL计时器 */
         vTaskDelay(5);
     }
 }
 
 /**
- * @brief       led_task
+ * @brief       mpu6050_task
  * @param       pvParameters : 传入参数(未用到)
  * @retval      无
  */
-void led_task(void *pvParameters)
+void mpu6050_task(void *pvParameters)
 {
     pvParameters = pvParameters;
-    
+    //打印mpu_itr状态
+    int16_t accel_data[3];
+    int16_t gyro_data[3];
+    uint8_t status;
+
+    xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
+    mpu6050_init(); /* MPU6050初始化 */
+    xSemaphoreGive(MutexSemaphore);                 /* 释放互斥信号量 */
+
     while(1)
     {
-        //LED0_TOGGLE();
-        vTaskDelay(pdMS_TO_TICKS(49));
+            
+        
+        if(xSemaphoreTake(MpuSemaphore, portMAX_DELAY) == pdTRUE) 
+        {
+            xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
+            
+            status = mpu6050_receivebyte(INT_STATUS);
+            mpu6050_getdata(accel_data, gyro_data); // 获取MPU6050数据
+            xSemaphoreGive(MutexSemaphore);                 /* 释放互斥信号量 */
+            printf("Accel: X=%d, Y=%d, Z=%d | Gyro: X=%d, Y=%d, Z=%d\r\n",
+                   accel_data[0], accel_data[1], accel_data[2],
+                   gyro_data[0], gyro_data[1], gyro_data[2]);
+        }          
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
 

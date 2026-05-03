@@ -1,7 +1,17 @@
 #ifndef __MYIIC_H
 #define __MYIIC_H
 
+#include "./SYSTEM/delay/delay.h"
+
 #include "./SYSTEM/sys/sys.h"
+
+#define SCL_H() HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET)   // SCL 拉高
+#define SCL_L() HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET) // SCL 拉低
+
+#define SDA_H() HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET)   // SDA 拉高
+#define SDA_L() HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET) // SDA 拉低
+
+#define SDA_READ() HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9) // 读取 SDA 状态
 
 void iic_init(void);
 void iic_start(void);
@@ -11,10 +21,5 @@ void iic_ack(void);
 void iic_nack(void);
 void iic_send_byte(uint8_t byte);
 uint8_t iic_read_byte(uint8_t ack);
-uint8_t iic_device_scan(uint8_t addr_7bit);
 
-uint8_t iic_write_one_byte(uint8_t addr_7bit, uint8_t reg, uint8_t data);
-uint8_t iic_read_one_byte(uint8_t addr_7bit, uint8_t reg);
-uint8_t iic_write_multi_byte(uint8_t addr_7bit, uint8_t reg, uint8_t length, uint8_t *data);
-uint8_t iic_read_multi_byte(uint8_t addr_7bit, uint8_t reg, uint8_t length, uint8_t *data);
 #endif

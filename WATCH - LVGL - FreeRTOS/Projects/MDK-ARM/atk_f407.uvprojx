@@ -524,6 +524,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_wwdg.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_hal_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_exti.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -578,6 +583,16 @@
               <FileName>wwdg.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Drivers\BSP\WWDG\wwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>mpu6050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\BSP\MPU6050\mpu6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\BSP\EXTI\exti.c</FilePath>
             </File>
           </Files>
         </Group>
