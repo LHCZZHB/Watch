@@ -9,13 +9,14 @@ void iic_init(void)
 
     // 配置 SCL 和 SDA
     gpio_init_struct.Pin = GPIO_PIN_8; // SCL -> PB8
-    gpio_init_struct.Mode = GPIO_MODE_OUTPUT_PP;      // 推挽输出
+    gpio_init_struct.Mode = GPIO_MODE_OUTPUT_OD;      // 开漏输出
     gpio_init_struct.Pull = GPIO_PULLUP;              // 上拉
     gpio_init_struct.Speed = GPIO_SPEED_FREQ_HIGH;    // 高速
     HAL_GPIO_Init(GPIOB, &gpio_init_struct);          // 初始化 GPIOB
 
     gpio_init_struct.Pin = GPIO_PIN_9; // SDA -> PB9
     gpio_init_struct.Mode = GPIO_MODE_OUTPUT_OD;      // 开漏输出
+    gpio_init_struct.Pull = GPIO_PULLUP;              // 上拉
     HAL_GPIO_Init(GPIOB, &gpio_init_struct);          // 初始化 GPIOB
 
     // 默认 SCL 和 SDA 拉高

@@ -46,8 +46,9 @@
 #define	MPU6050_PWR_MGMT_2		0x6C
 #define	MPU6050_WHO_AM_I		0x75
 
-void mpu6050_init(void); /* MPU6050初始化 */
-void mpu6050_getdata(int16_t *accel_data, int16_t *gyro_data); /* 获取加速度和陀螺仪数据 */
-
-
+void mpu6050_dmp_init(void); /* DMP初始化 */
+//void mpu6050_getdata(int16_t *accel_data, int16_t *gyro_data); /* 获取加速度和陀螺仪数据 */
+uint8_t mpu6050_sendmultibytes(uint8_t dev_adder, uint8_t regaddress, uint8_t *data, uint8_t length);
+uint8_t mpu6050_receivemultibytes(uint8_t dev_adder, uint8_t regaddress, uint8_t *data, uint8_t length);
+uint8_t mpu6050_readDMP(float *pitch, float *roll, float *yaw);
 #endif
