@@ -51,4 +51,7 @@ void mpu6050_dmp_init(void); /* DMP³õÊ¼»¯ */
 uint8_t mpu6050_sendmultibytes(uint8_t dev_adder, uint8_t regaddress, uint8_t *data, uint8_t length);
 uint8_t mpu6050_receivemultibytes(uint8_t dev_adder, uint8_t regaddress, uint8_t *data, uint8_t length);
 uint8_t mpu6050_readDMP(float *pitch, float *roll, float *yaw);
+uint8_t mpu6050_get_steps(unsigned long *steps, unsigned long *walk_time);
+void reset_mpu6050_step_counter(void);
+
 #endif

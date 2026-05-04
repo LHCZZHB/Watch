@@ -60,7 +60,7 @@ void extix_init(void)
 
 
     /* EXTI15_10_IRQn 是共享中断入口，触摸和 MPU6050 共用同一个优先级 */
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0); // 设置外部中断优先级
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 6, 0); // 设置外部中断优先级
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn); // 使能外部中断
 }
 

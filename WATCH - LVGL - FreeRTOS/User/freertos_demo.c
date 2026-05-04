@@ -145,11 +145,13 @@ void mpu6050_task(void *pvParameters)
     //打印mpu_itr状态
     // int16_t accel_data[3];
     // int16_t gyro_data[3];
-    float pitch = 0.0f;
-    float roll = 0.0f;
-    float yaw = 0.0f;
+    // float pitch = 0.0f;
+    // float roll = 0.0f;
+    // float yaw = 0.0f;
     uint8_t int_status;
-    uint8_t dmp_ret;
+    // uint8_t dmp_ret;
+    unsigned long steps = 0;
+    unsigned long walk_time = 0;
 
     xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
     mpu6050_dmp_init(); /* MPU6050初始化 */
@@ -162,22 +164,29 @@ void mpu6050_task(void *pvParameters)
             xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
             
             int_status = mpu6050_receivebyte(INT_STATUS);
-            dmp_ret = mpu6050_readDMP(&pitch, &roll, &yaw); // 获取DMP数据并计算欧拉角
-            if(dmp_ret != 0)
-            {
-                mpu_reset_fifo();
-                printf("DMP read failed: %u, INT_STATUS=0x%02X\r\n", dmp_ret, int_status);
-            }
-            else
-            {
-                printf("INT_STATUS=0x%02X, Pitch: %.2f, Roll: %.2f, Yaw: %.2f\r\n",
-                       int_status, pitch, roll, yaw);
-            }
+            // dmp_ret = mpu6050_readDMP(&pitch, &roll, &yaw); // 获取DMP数据并计算欧拉角
+            // if(dmp_ret != 0)
+            // {
+            //     mpu_reset_fifo();
+            //     printf("DMP read failed: %u, INT_STATUS=0x%02X\r\n", dmp_ret, int_status);
+            // }
+            // else
+            // {
+            //     printf("INT_STATUS=0x%02X, Pitch: %.2f, Roll: %.2f, Yaw: %.2f\r\n",
+            //            int_status, pitch, roll, yaw);
+            // }
+
+            // 获取计步器数据
+            mpu6050_get_steps(&steps, &walk_time);
             // mpu6050_readDMP(accel_data, gyro_data); // 获取MPU6050数据
             xSemaphoreGive(MutexSemaphore);                 /* 释放互斥信号量 */
-            // printf("Accel: X=%d, Y=%d, Z=%d | Gyro: X=%d, Y=%d, Z=%d\r\n",
-            //        accel_data[0], accel_data[1], accel_data[2],
-            //        gyro_data[0], gyro_data[1], gyro_data[2]);
+            printf("Steps: %lu, Walk Time: %lu ms\r\n", steps, walk_time);
+            vTaskDelay(pdMS_TO_TICKS(100));
+
+            if(steps>=30)
+            {
+                reset_mpu6050_step_counter();
+            }
         }          
         //vTaskDelay(pdMS_TO_TICKS(20));
     }

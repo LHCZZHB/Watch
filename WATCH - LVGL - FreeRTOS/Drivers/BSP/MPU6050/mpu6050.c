@@ -6,7 +6,13 @@
 #include "inv_mpu_dmp_motion_driver.h"
 #include <math.h>
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+
 #define q30                    1073741824.0f    //q30格式，long转float时的除数
+
+extern SemaphoreHandle_t MutexSemaphore;
 //陀螺仪方向设置
 //static signed char gyro_orientation[9] = { 1,  0,  0,
 //                                           0,  1,  0,
@@ -234,8 +240,8 @@ void mpu6050_dmp_init(void)
         //设置DMP功能
         result = dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | 
             DMP_FEATURE_SEND_RAW_ACCEL | 
-            DMP_FEATURE_SEND_RAW_GYRO //|
-            //DMP_FEATURE_PEDOMETER
+            DMP_FEATURE_SEND_RAW_GYRO |
+            DMP_FEATURE_PEDOMETER
         );
         if(!result)        
         {
@@ -371,4 +377,39 @@ uint8_t mpu6050_readDMP(float *pitch, float *roll, float *yaw)
     {
         return 2; // 返回错误代码
     }
+}
+
+/**
+ * @brief  获取DMP计步器数据
+ * @param  steps : 存储步数的变量指针
+ * @param  walk_time : 存储行走时间（毫秒）的变量指针
+ * @retval 0:成功, 其他:失败
+ */
+uint8_t mpu6050_get_steps(unsigned long *steps, unsigned long *walk_time)
+{
+    // 调用库函数读取步数和时间
+    if (dmp_get_pedometer_step_count(steps) != 0)
+    {
+        return 1;
+    }
+
+    if (dmp_get_pedometer_walk_time(walk_time) != 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+void reset_mpu6050_step_counter(void)
+{
+    xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
+    if (dmp_set_pedometer_step_count(0) == 0)
+    {
+        printf("MPU6050 step counter reset successfully!\r\n");
+    }
+    else
+    {
+        printf("Failed to reset MPU6050 step counter!\r\n");
+    }
+    xSemaphoreGive(MutexSemaphore);                 /* 释放互斥信号量 */
 }
