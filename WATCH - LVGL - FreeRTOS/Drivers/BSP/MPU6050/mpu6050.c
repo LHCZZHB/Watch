@@ -275,15 +275,15 @@ void mpu6050_dmp_init(void)
         // }
 
         //使能DMP
-        result = dmp_enable_gyro_cal(1);
-        if(!result)        
-        {
-            printf("DMP gyro calibration enabled successfully!\r\n");
-        }
-        else
-        {
-            printf("Failed to enable DMP gyro calibration!\r\n");
-        }
+        // result = dmp_enable_gyro_cal(1);
+        // if(!result)        
+        // {
+        //     printf("DMP gyro calibration enabled successfully!\r\n");
+        // }
+        // else
+        // {
+        //     printf("Failed to enable DMP gyro calibration!\r\n");
+        // }
 
         // 所有 DMP 参数配置完成后，再真正打开 DMP
         for(retry = 0; retry < 3; retry++)

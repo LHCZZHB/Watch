@@ -46,6 +46,8 @@ SemaphoreHandle_t MpuSemaphore = NULL;             /* MPU6050数据访问二值信号量 
 SemaphoreHandle_t TouchSemaphore = NULL;           /* 触摸数据访问二值信号量 */
 SemaphoreHandle_t MutexSemaphore = NULL;           /* 互斥信号量  */
 
+unsigned long steps = 0;
+unsigned long walk_time = 0;
 /******************************************************************************************************/
 
 
@@ -122,7 +124,7 @@ void lv_demo_task(void *pvParameters)
     
     while(1)
     {
-        if(xSemaphoreTake(TouchSemaphore, portMAX_DELAY) == pdTRUE) 
+        if(xSemaphoreTake(TouchSemaphore, 0) == pdTRUE) 
         {
             xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
             cst816t_getaction(&x, &y, &gesture, &finger_num); // 获取触摸状态
@@ -145,13 +147,12 @@ void mpu6050_task(void *pvParameters)
     //打印mpu_itr状态
     // int16_t accel_data[3];
     // int16_t gyro_data[3];
-    // float pitch = 0.0f;
-    // float roll = 0.0f;
-    // float yaw = 0.0f;
+    float pitch = 0.0f;
+    float roll = 0.0f;
+    float yaw = 0.0f;
     uint8_t int_status;
-    // uint8_t dmp_ret;
-    unsigned long steps = 0;
-    unsigned long walk_time = 0;
+    uint8_t dmp_ret;
+
 
     xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
     mpu6050_dmp_init(); /* MPU6050初始化 */
@@ -164,12 +165,12 @@ void mpu6050_task(void *pvParameters)
             xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
             
             int_status = mpu6050_receivebyte(INT_STATUS);
-            // dmp_ret = mpu6050_readDMP(&pitch, &roll, &yaw); // 获取DMP数据并计算欧拉角
-            // if(dmp_ret != 0)
-            // {
-            //     mpu_reset_fifo();
-            //     printf("DMP read failed: %u, INT_STATUS=0x%02X\r\n", dmp_ret, int_status);
-            // }
+            dmp_ret = mpu6050_readDMP(&pitch, &roll, &yaw); // 获取DMP数据并计算欧拉角
+            if(dmp_ret != 0)
+            {
+                mpu_reset_fifo();
+                printf("DMP read failed: %u, INT_STATUS=0x%02X\r\n", dmp_ret, int_status);
+            }
             // else
             // {
             //     printf("INT_STATUS=0x%02X, Pitch: %.2f, Roll: %.2f, Yaw: %.2f\r\n",
@@ -183,10 +184,10 @@ void mpu6050_task(void *pvParameters)
             printf("Steps: %lu, Walk Time: %lu ms\r\n", steps, walk_time);
             vTaskDelay(pdMS_TO_TICKS(100));
 
-            if(steps>=30)
-            {
-                reset_mpu6050_step_counter();
-            }
+            // if(steps>=30)
+            // {
+            //     reset_mpu6050_step_counter();
+            // }
         }          
         //vTaskDelay(pdMS_TO_TICKS(20));
     }

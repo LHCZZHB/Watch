@@ -13,7 +13,10 @@
 #include "../../lvgl.h"
 #include "./BSP/TOUCH/cst816.h"
 #include "./SYSTEM/usart/usart.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
+extern SemaphoreHandle_t MutexSemaphore;
 /*********************
  *      DEFINES
  *********************/
@@ -85,7 +88,11 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     uint8_t gesture = 0;
     uint8_t finger_num = 0;
 
-    cst816t_getaction(&touch_x, &touch_y, &gesture, &finger_num);
+    if(xSemaphoreTake(MutexSemaphore, pdMS_TO_TICKS(10)) == pdTRUE) 
+    {
+        cst816t_getaction(&touch_x, &touch_y, &gesture, &finger_num);
+        xSemaphoreGive(MutexSemaphore);
+    }
     last_finger_num = finger_num;
 
     /*Save the pressed coordinates and the state*/
