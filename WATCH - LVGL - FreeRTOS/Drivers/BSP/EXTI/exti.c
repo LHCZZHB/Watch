@@ -26,15 +26,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
         case TOUCH_INT_PIN:
             xSemaphoreGiveFromISR(TouchSemaphore, &xHigherPriorityTaskWoken); // 给触摸释放二值信号量
-            portYIELD_FROM_ISR(xHigherPriorityTaskWoken); // 如果需要切换任务，进行上下文切换
             break;
 
         case MPU_INT_PIN:
             xSemaphoreGiveFromISR(MpuSemaphore, &xHigherPriorityTaskWoken); // 给 MPU6050释放二值信号量
-            portYIELD_FROM_ISR(xHigherPriorityTaskWoken); // 如果需要切换任务，进行上下文切换
             break;
         default : break;
     }
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken); // 如果需要切换任务，进行上下文切换
+    
 }
 
 /**

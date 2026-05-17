@@ -160,7 +160,7 @@ void mpu6050_task(void *pvParameters)
 
     while(1)
     { 
-        if(xSemaphoreTake(MpuSemaphore, portMAX_DELAY) == pdTRUE) 
+        if(xSemaphoreTake(MpuSemaphore, pdMS_TO_TICKS(100)) == pdTRUE) 
         {
             xSemaphoreTake(MutexSemaphore, portMAX_DELAY);  /* 获取互斥信号量 */
             
@@ -171,11 +171,6 @@ void mpu6050_task(void *pvParameters)
                 mpu_reset_fifo();
                 printf("DMP read failed: %u, INT_STATUS=0x%02X\r\n", dmp_ret, int_status);
             }
-            // else
-            // {
-            //     printf("INT_STATUS=0x%02X, Pitch: %.2f, Roll: %.2f, Yaw: %.2f\r\n",
-            //            int_status, pitch, roll, yaw);
-            // }
 
             // 获取计步器数据
             mpu6050_get_steps(&steps, &walk_time);
@@ -183,13 +178,7 @@ void mpu6050_task(void *pvParameters)
             xSemaphoreGive(MutexSemaphore);                 /* 释放互斥信号量 */
             printf("Steps: %lu, Walk Time: %lu ms\r\n", steps, walk_time);
             vTaskDelay(pdMS_TO_TICKS(100));
-
-            // if(steps>=30)
-            // {
-            //     reset_mpu6050_step_counter();
-            // }
-        }          
-        //vTaskDelay(pdMS_TO_TICKS(20));
+        }
     }
 }
 
